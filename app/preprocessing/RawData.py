@@ -25,7 +25,6 @@ class RawData:
         The first row of the csv data need to be the column name.
         """
         self.column_names.remove('DateTime')
-        print(self.file.name)
         dict_column_f = {i: lambda x: (x.replace(',', '.')) for i in self.column_names}
         df = pd.read_csv(self.file.get_full_path(), sep=';', encoding='latin-1', converters=dict_column_f)
         self.column_names.append('DateTime')

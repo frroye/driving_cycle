@@ -1,5 +1,6 @@
 """
-Description: The class MicrotripsData is used to create the microtrips from the raw data and to save it to a csv file.
+Description: The class MicrotripsData is used to create
+the microtrips from the raw data and to save it to a csv file.
 
 """
 

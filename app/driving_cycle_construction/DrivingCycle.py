@@ -154,13 +154,17 @@ class DrivingCycle:
                 f.write("%s,%s\n" % (key, self.get_parameters()[key]))
 
     def save_cycle_data(self, directory_name, file_name):
-        file_name = directory_name + file_name + ".csv"
+        file_name = directory_name + str(file_name) + ".csv"
         df = self.get_full_driving_cycle()
         df.to_csv(file_name, sep=";")
 
-    def visualize_dc(self, parameter, title="driving cycle"):
-        """Visualize the driving cycle parameter over time. Each microtip has a different color."""
+    def visualize_dc(self, parameter, title="driving cycle", show=False, path=None):
+        """Visualize the driving cycle parameter over time. Each microtip has a different color.
+        parameter: 'Speed', 'FuelRate', 'Acc'
+
+        """
         df = self.get_full_driving_cycle()
+        print(df.columns)
         df["cumulative_time"] = df["Duration"].cumsum()
         i = 0
         color = ['0.75', 'b', 'g', 'r', 'c', 'm', '0.75', 'y', 'k', '0.45', 'b', 'g', 'r', 'c', 'm', '0.75', 'y',
@@ -173,7 +177,11 @@ class DrivingCycle:
         pyplot.xlabel("Time (s)")
         pyplot.ylabel(parameter)
         pyplot.title(title)
-        pyplot.show()
+        if path:
+            pyplot.savefig(path)
+        if show:
+            pyplot.show()
+
 
 def create_results_directory(name):
     # define the name of the directory to be created

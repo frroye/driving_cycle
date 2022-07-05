@@ -8,37 +8,40 @@ import matplotlib.pyplot as plt
 from preprocessing.RawDataController import find_files
 
 
+def import_csv2pd(file):
+    """Import csv to pandas dataframe.
+    The first row of the data need to be the column name."""
+    df = pd.read_csv(file.path + file.name + file.extension,
+                     sep=';', encoding='latin-1')
+    return df
+
+
 class ClusteringController:
 
-    def __init__(self, files=[], path="../data/microtrips/"):
+    def __init__(self, microtrip_df):
+        """
         self.path = path  # directory containing microtrip files
         if not files:
             self.microtrips_files = find_files(self.path)
         else:
             self.microtrips_files = files
-        self.df = self.import_all()
+            """
+        self.df = microtrip_df
         self.clustered_df = None
         self.clusters = None
-
-    def import_csv2pd(self, file):
-        """Import csv to pandas dataframe.
-        The first row of the data need to be the column name."""
-        df = pd.read_csv(file.path + file.name + file.extension,
-                         sep=';', encoding='latin-1')
-        return df
 
     def import_all(self):
         df = []
         for file in self.microtrips_files:
-            df_ = self.import_csv2pd(file)
-            #df_['File'] = file.name
-            #df_.set_index(['File', 'Seg'])
+            df_ = import_csv2pd(file)
+            # df_['File'] = file.name
+            # df_.set_index(['File', 'Seg'])
             df.append(df_)
             print(file.name)
         df = pd.concat(df, axis=0, join='outer', ignore_index=False, keys=None,
                        levels=None, names=None, verify_integrity=False, copy=True)
 
-        #df = df.reset_index()
+        # df = df.reset_index()
         df = df.drop(columns='Seg')
         return df
 
@@ -46,7 +49,7 @@ class ClusteringController:
         """ calculate the number of microtrips"""
         return len(self.df.index)
 
-    def PCA(self, n_component, columns):
+    def pca(self, n_component, columns):
         """ n_component : number of component of the PCA.
         columns: columns used to execute the PCA
         Transform the data into principal components using PCA.
@@ -81,7 +84,7 @@ class ClusteringController:
     def select_clustering_columns(self, col, PCA=False, n_component=0.80):
         """Select the columns that will be use in the clustering"""
         if PCA:
-            self.clustered_df = self.PCA(n_component, col)
+            self.clustered_df = self.pca(n_component, col)
         else:
             df = self.df[col]
             df = StandardScaler().fit_transform(df)  # Standardized the features
@@ -89,7 +92,7 @@ class ClusteringController:
             df.columns = col
             self.clustered_df = df
 
-    def visualize_cluster2D(self, xlabel=None, ylabel=None, titre="Clustering"):
+    def visualize_cluster_2d(self, xlabel=None, ylabel=None, titre="Clustering"):
         """ Plot the clusters in 2D according do xlabel and ylabel dimensions/columns"""
         if xlabel is None:
             xlabel = self.df.columns[0]
@@ -107,7 +110,7 @@ class ClusteringController:
             pyplot.plot(x, y, 'o', c=color[i], markersize=6)
         pyplot.show()
 
-    def visualize_cluster3D(self, xlabel=None, ylabel=None, zlabel=None):
+    def visualize_cluster_3d(self, xlabel=None, ylabel=None, zlabel=None):
         """ Plot the clusters in 3D according to xlabel, ylabel, zlabel dimensions/columns"""
         # nbCluster = getNbCluster(df_segment)
         if xlabel is None:
@@ -130,10 +133,8 @@ class ClusteringController:
             ax.scatter3D(x, y, z, c=color[i])
         pyplot.show()
 
-
-    def save_csv(self, file_name, path = "../data/clustered_microtrips/"):
+    def save_csv(self, file_name, path="../data/clustered_microtrips/"):
         """ Save the df containing the clusters in csv file"""
         if 'cluster' in self.df.columns:
             file_name = path + file_name + ".csv"
             self.df.to_csv(file_name, sep=";")
-

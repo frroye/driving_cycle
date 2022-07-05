@@ -4,10 +4,19 @@ from driving_cycle_construction.AssessmentCriteriaCalculator import AssessmentCr
 from driving_cycle_construction.DCParametersCalculator import DCParametersCalculator
 import pandas as pd
 
+
+def import_csv2pd(file):
+    """Import csv to pandas dataframe.
+    The first row of the data need to be the column name."""
+    df = pd.read_csv(file.path + file.name + file.extension, sep=';', encoding='latin-1')
+    return df
+
+
 class DrivingCyclesController:
-    def __init__(self, file, comparisonParameters = []):
-        self.file = file
-        self.segment_df = self.import_csv2pd(file)
+    def __init__(self, clustered_microtrip_df, cycle_len, delta_speed, comparisonParameters=[]):
+        self.segment_df = clustered_microtrip_df
+        self.cycle_len = cycle_len
+        self.delta_speed = delta_speed
         # generate the transition matrix
         tmc = TransitionMatrixController(self.segment_df)
         self.transition_matrix = tmc.get_transition_matrix()
@@ -16,36 +25,39 @@ class DrivingCyclesController:
         self.assessment_criteria = dc_parameter_controller.summarize()
         self.comparisonParameters = comparisonParameters
 
-    def import_csv2pd(self, file):
-        """Import csv to pandas dataframe.
-        The first row of the data need to be the column name."""
-        df = pd.read_csv(file.path + file.name + file.extension, sep=';', encoding='latin-1')
-        return df
+    def generate_cycle(self):
+        dc = DrivingCycle(self.segment_df, self.transition_matrix, self.cycle_len, self.delta_speed, cycle_id=0)
+        print(dc.parameters)
+        dc.visualize_dc('Speed')
 
-    def generate_cycle(self, iteration=20, dc_len=600, delta_speed=10):
+    def generate_cycle(self, iteration, number_of_cycle):
         """Generate cycles and select the best one. 
-        Cycles containes the potentiel cycles.
-        Parameters containes the difference between the cycles parameter and the the assessment criteria.
+        Cycles contains the potential cycles.
+        Parameters contains the difference between the cycles parameter and the the assessment criteria.
         iteration: number of cycles generated
-        dc_len: lenght of the cycles, in secondes
+        dc_len: length of the cycles, in seconds
         delta_speed: accepted speed difference between two microtrips edges
-        Return the selected cycle.
+        Return the selected cycles.
         """
+
         parameters = []
         cycles = []
         for i in range(0, iteration):
-            cycle = DrivingCycle(self.segment_df, self.transition_matrix, dc_len, delta_speed, i)
+            cycle = DrivingCycle(self.segment_df, self.transition_matrix, self.cycle_len, self.delta_speed, i)
             cycles.append(cycle)
             parameters.append(cycle.compute_difference(self.assessment_criteria))
         comparison_df = self.compare_cycle(parameters)
-        nb = comparison_df['rank'].sort_values(ascending=True).index.values[0]
-        cycles[nb].set_rank((comparison_df.iloc[int(nb)]['rank']))
-        return cycles[nb]
+        selected_cycles = []
+        for c in range(0, number_of_cycle):
+            nb = comparison_df['rank'].sort_values(ascending=True).index.values[c]
+            cycles[nb].set_rank((comparison_df.iloc[int(nb)]['rank']))
+            selected_cycles.append(nb)
+        return [cycles[nb] for nb in selected_cycles]
 
     def compare_cycle(self, parameters):
         """Compare the cycles contained in parameters. 
         It ranks the cycles according to each criterion. The most performant cycle according to a 
-        criterion is given a rank 0. This rank is added to the column rank, that containes the 
+        criterion is given a rank 0. This rank is added to the column rank, that contains the
         sum of all ranks of a cycle. It only ranks the cycle according to the comparison parameters 
         in self.comparisonParameters.
         """
@@ -58,4 +70,3 @@ class DrivingCyclesController:
             for i in range(0, len(index)):
                 comparison_df.loc[index[i], 'rank'] += i
         return comparison_df
-
