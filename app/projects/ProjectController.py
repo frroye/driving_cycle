@@ -28,6 +28,8 @@ class ProjectController:
         self.clean_data_df = None
         self.microtrip_df = None
         self.clustered_microtrip_df = None
+        self.raw_data_controler = None
+        self.clustering_controller = None
 
     def create_directories(self):
         """Create the require sub directories:
@@ -46,19 +48,40 @@ class ProjectController:
         if not directory_is_empty(raw_data_directory):
             fc = find_files(raw_data_directory, column_names)
             microtrip_len = microtrip_len
-            data_controler = RawDataController(fc)
-            data_controler.build_microtrips(microtrip_len)
-            self.microtrip_df = data_controler.combine_microtrips()
-            self.clean_data_df = data_controler.get_combined_clean_data()
+            self.raw_data_controler = RawDataController(fc)
+            self.raw_data_controler.build_microtrips(microtrip_len)
+            self.microtrip_df = self.raw_data_controler.combine_microtrips()
+            self.clean_data_df = self.raw_data_controler.get_combined_clean_data()
         else:
             print("data/raw_data is empty.")
 
-    def cluster(self, columns, PCA=True, number_of_cluster=7):
-        clustering_controller = ClusteringController(self.microtrip_df)
-        clustering_controller.select_clustering_columns(columns, PCA)
-        clustering_controller.kmeans(number_of_cluster)
-        self.clustered_microtrip_df = clustering_controller.df
-        clustering_controller.visualize_cluster_2d(columns[0], columns[1])
+    def save_microtrips_data(self, path):
+        self.microtrip_df.to_csv(path, sep=";")
+
+    def save_clean_data(self, path):
+        self.clean_data_df.to_csv(path, sep=";")
+
+    def set_microtrips_data(self, path):
+        self.microtrip_df = pd.read_csv(path, sep=';', encoding='latin-1')
+        self.clustering_controller = ClusteringController(self.microtrip_df)
+
+    def set_clean_data(self, path):
+        self.clean_data_df = pd.read_csv(path, sep=';', encoding='latin-1')
+
+    def save_clustered_data(self, path):
+        self.clean_data_df.to_csv(path, sep=";")
+
+    def set_clustered_data(self, path):
+        self.clustered_microtrip_df = pd.read_csv(path, sep=';', encoding='latin-1')
+
+    def cluster(self, columns, PCA, number_of_cluster=7):
+        self.clustering_controller = ClusteringController(self.microtrip_df)
+        self.clustering_controller.select_clustering_columns(columns, PCA)
+        self.clustering_controller.kmeans(number_of_cluster)
+        self.clustered_microtrip_df = self.clustering_controller.df
+
+    def vizualize_cluster_2d(self, x, y, show=False, path=None):
+        self.clustering_controller.visualize_cluster_2d(x, y, show=show, path=path)
 
     def produce_driving_cycle(self, cycle_len, delta_speed, iteration, number_of_cycle=1):
         dc_controller = DrivingCyclesController(self.clustered_microtrip_df, self.clean_data_df, cycle_len, delta_speed)

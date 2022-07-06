@@ -5,44 +5,14 @@ from matplotlib import pyplot
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
-from preprocessing.RawDataController import find_files
-
-
-def import_csv2pd(file):
-    """Import csv to pandas dataframe.
-    The first row of the data need to be the column name."""
-    df = pd.read_csv(file.path + file.name + file.extension,
-                     sep=';', encoding='latin-1')
-    return df
 
 
 class ClusteringController:
 
     def __init__(self, microtrip_df):
-        """
-        self.path = path  # directory containing microtrip files
-        if not files:
-            self.microtrips_files = find_files(self.path)
-        else:
-            self.microtrips_files = files
-            """
         self.df = microtrip_df
         self.clustered_df = None
         self.clusters = None
-
-    def import_all(self):
-        df = []
-        for file in self.microtrips_files:
-            df_ = import_csv2pd(file)
-            # df_['File'] = file.name
-            # df_.set_index(['File', 'Seg'])
-            df.append(df_)
-        df = pd.concat(df, axis=0, join='outer', ignore_index=False, keys=None,
-                       levels=None, names=None, verify_integrity=False, copy=True)
-
-        # df = df.reset_index()
-        df = df.drop(columns='Seg')
-        return df
 
     def get_microtrips_number(self):
         """ calculate the number of microtrips"""
@@ -80,9 +50,9 @@ class ClusteringController:
         self.df["cluster"] = yhat
         self.clustered_df["cluster"] = yhat
 
-    def select_clustering_columns(self, col, PCA=False, n_component=0.80):
+    def select_clustering_columns(self, col, is_pca, n_component=0.80):
         """Select the columns that will be use in the clustering"""
-        if PCA:
+        if is_pca:
             self.clustered_df = self.pca(n_component, col)
         else:
             df = self.df[col]
@@ -91,27 +61,21 @@ class ClusteringController:
             df.columns = col
             self.clustered_df = df
 
-    def visualize_cluster_2d(self, xlabel=None, ylabel=None, titre="Clustering"):
+    def visualize_cluster_2d(self, xlabel=None, ylabel=None, title="Clustering", show=False, path=None):
         """ Plot the clusters in 2D according do xlabel and ylabel dimensions/columns"""
-        if xlabel is None:
-            xlabel = self.df.columns[0]
+        if xlabel is None or xlabel not in self.clustered_df.columns :
+            xlabel = self.clustered_df.columns[0]
 
-        if ylabel is None:
-            ylabel = self.df.columns[1]
-        color = ['0.75', 'b', 'g', 'r', 'c', 'm', '0.75', 'y', 'k', '0.45', 'b', 'g', 'r', 'c', 'm', '0.75', 'y',
-                 'k']
-        for i in self.clusters:
-            x = self.df[self.df['cluster'] == i][xlabel]
-            y = self.df[self.df['cluster'] == i][ylabel]
-            pyplot.xlabel(xlabel)
-            pyplot.ylabel(ylabel)
-            pyplot.title(titre)
-            pyplot.plot(x, y, 'o', c=color[i], markersize=6)
-        pyplot.show()
+        if ylabel is None or ylabel not in self.clustered_df.columns:
+            ylabel = self.clustered_df.columns[1]
+        fig = self.clustered_df.plot.scatter(x=xlabel, y=ylabel, c="cluster", colormap='viridis', title=title, legend=False).get_figure()
+        if path:
+            fig.savefig(path + '.png')
+        if show:
+            fig.show()
 
     def visualize_cluster_3d(self, xlabel=None, ylabel=None, zlabel=None):
         """ Plot the clusters in 3D according to xlabel, ylabel, zlabel dimensions/columns"""
-        # nbCluster = getNbCluster(df_segment)
         if xlabel is None:
             xlabel = self.clustered_df.columns[0]
 
@@ -131,9 +95,3 @@ class ClusteringController:
             z = self.clustered_df[self.clustered_df['cluster'] == i][zlabel]
             ax.scatter3D(x, y, z, c=color[i])
         pyplot.show()
-
-    def save_csv(self, file_name, path="../data/clustered_microtrips/"):
-        """ Save the df containing the clusters in csv file"""
-        if 'cluster' in self.df.columns:
-            file_name = path + file_name + ".csv"
-            self.df.to_csv(file_name, sep=";")

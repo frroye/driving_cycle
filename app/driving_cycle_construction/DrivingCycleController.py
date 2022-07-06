@@ -1,15 +1,7 @@
 from driving_cycle_construction.DrivingCycle import DrivingCycle
 from driving_cycle_construction.TransitionMatrixController import TransitionMatrixController
-from driving_cycle_construction.AssessmentCriteriaCalculator import AssessmentCriteriaCalculator
 from driving_cycle_construction.DCParametersCalculator import DCParametersCalculator
 import pandas as pd
-
-
-def import_csv2pd(file):
-    """Import csv to pandas dataframe.
-    The first row of the data need to be the column name."""
-    df = pd.read_csv(file.path + file.name + file.extension, sep=';', encoding='latin-1')
-    return df
 
 
 class DrivingCyclesController:
@@ -18,14 +10,16 @@ class DrivingCyclesController:
         self.clean_data_df = clean_data_df
         self.cycle_len = cycle_len
         self.delta_speed = delta_speed
+        self.comparisonParameters = comparisonParameters
+        self.cycles = []
+
         # generate the transition matrix
         tmc = TransitionMatrixController(self.segment_df)
         self.transition_matrix = tmc.get_transition_matrix()
+
         # generate the assessment criteria
         dc_parameter_controller = DCParametersCalculator(self.segment_df, id=-1)
         self.assessment_criteria = dc_parameter_controller.summarize()
-        self.comparisonParameters = comparisonParameters
-        self.cycles =[]
 
     def get_full_cycles(self):
         return [dc.get_full_driving_cycle(self.clean_data_df) for dc in self.cycles]

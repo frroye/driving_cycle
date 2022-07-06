@@ -1,10 +1,7 @@
 import pandas as pd
 import random
 from driving_cycle_construction.DCParametersCalculator import DCParametersCalculator
-from matplotlib import pyplot
-from driving_cycle_construction.TransitionMatrixController import TransitionMatrixController
 import os
-from driving_cycle_construction.AssessmentCriteriaCalculator import AssessmentCriteriaCalculator
 
 
 class DrivingCycle:
@@ -21,12 +18,6 @@ class DrivingCycle:
         self.difference = None
         self.rank = None
         self.full_cycle = None
-
-    def import_csv2pd(self, file):
-        """Import csv to pandas dataframe.
-        The first row of the data need to be the column name."""
-        df = pd.read_csv(file.path + file.name + file.extension, sep=';', encoding='latin-1')
-        return df
 
     def select_first_segment(self):
         """ Aleatory select a first segment within the segment data frame df_segment.
@@ -119,13 +110,8 @@ class DrivingCycle:
 
     def get_full_driving_cycle(self, clean_data_df):
         """Return the full profile of the driving cycle, using the microtrips full data."""
-        #TODO a revoir ici cause surement un pb :/
-        df = [None] * len(self.segment_list)
-        print(self.segment_list)
         full_segment_data = []
         for seg in self.segment_list:
-            position = self.segment_list.index(seg)
-            df[position] = (clean_data_df[clean_data_df['Seg'] == seg])
             full_segment_data.append(clean_data_df[clean_data_df['Seg'] == seg])
 
         df = pd.concat(full_segment_data, axis=0, join='outer', ignore_index=False, keys=None,
@@ -163,37 +149,10 @@ class DrivingCycle:
     def visualize_dc(self, parameter, title="driving cycle", show=False, path=None):
         """Visualize the driving cycle parameter over time. Each microtip has a different color.
         parameter: 'Speed', 'FuelRate', 'Acc'
-
-
-        df = self.full_cycle
-        #df["cumulative_time"] = df["Duration"].cumsum()
-        i = 0
-        color = ['0.75', 'b', 'g', 'r', 'c', 'm', '0.75', 'y', 'k', '0.45', 'b', 'g', 'r', 'c', 'm', '0.75', 'y',
-                 'k']
-        for seg in self.segment_list:
-            x = df[df['Seg'] == seg]['cumulative_time']
-            y = df[df['Seg'] == seg][parameter]
-            pyplot.plot(x, y, 'o', c=color[i % len(color)], markersize=6)
-            i += 1
-        pyplot.xlabel("Time (s)")
-        pyplot.ylabel(parameter)
-        pyplot.title(title)
         """
         df = self.full_cycle
-
-        fig = df.plot.scatter(x="cumulative_time", y=parameter, c="Seg", colormap='viridis', legend=False).get_figure()
+        fig = df.plot.scatter(x="cumulative_time", y=parameter, c="Seg", title=title, colormap='viridis', legend=False).get_figure()
         if path:
             fig.savefig(path + '.png')
         if show:
             fig.show()
-
-
-def create_results_directory(name):
-    # define the name of the directory to be created
-    path = "../results/" + name
-    try:
-        os.mkdir(path)
-    except OSError:
-        print("Creation of the directory %s failed" % path)
-    else:
-        print("Successfully created the directory %s " % path)
