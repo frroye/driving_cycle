@@ -21,26 +21,12 @@ def create_directory(directory_name, parent_dir):
 
 
 class ProjectController:
-    def __init__(self, project_name, path="../results/"):
-        self.project_name = project_name + "/"
-        create_directory(self.project_name, path)
-        self.path = path + self.project_name
+    def __init__(self):
         self.clean_data_df = None
         self.microtrip_df = None
         self.clustered_microtrip_df = None
         self.raw_data_controler = None
         self.clustering_controller = None
-
-    def create_directories(self):
-        """Create the require sub directories:
-        raw_data, microtrips, clustered_microtrips, clean_data and results."""
-        if directory_is_empty(self.path):
-            self.create_directory('data/', self.path)
-            data_sub_directory = ["raw_data", "microtrips", "clustered_microtrips", "clean_data", "results"]
-            for directory in data_sub_directory:
-                create_directory(directory, self.path + 'data/')
-        else:
-            print(str(self.path) + " is not empty")
 
     def preprocess(self, raw_data_directory, column_names, microtrip_len):
         """Preprocess the content of data/raw_data.
