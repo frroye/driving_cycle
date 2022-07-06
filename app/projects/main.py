@@ -8,7 +8,7 @@ project_name = "test_4"
 microtrips_len = 250
 
 # Utilisation of PCA or not
-PCA = True
+PCA = False
 
 # Number of clusters used for the clustering
 number_of_cluster = 3
@@ -18,16 +18,16 @@ parameters = ['T', 'S', 'FuelR', 'FuelR_r', 'FuelRate_std', 'V', 'V_r', 'V_m', '
            'Acc_std', 'Idle_p', 'Acc_p', 'Cru_p', 'Cre_p', 'Dcc_p']
 parameters = ['V', 'Idle_p']
 # Driving cycle length in seconds
-cycle_len = 600
+cycle_len = 500
 
 # Maximum speed difference between the end and the beginning of two microtrips
-delta_speed = 5
+delta_speed = 3
 
 # Total number of cycle produced
-iteration = 20
+iteration = 10
 
 # Number of selected cycles
-nb_of_cycle = 4
+nb_of_cycle = 10
 
 
 """Initialization of the project controller"""
@@ -55,7 +55,6 @@ project_controller.preprocess(raw_data_directory, column_names, microtrips_len)
 
 """Clustering of the data"""
 project_controller.cluster(parameters, PCA, number_of_cluster)
-
 
 """Driving cycle construction """
 driving_cycles = project_controller.produce_driving_cycle(cycle_len, delta_speed, iteration, nb_of_cycle)

@@ -1,15 +1,15 @@
-
 from preprocessing.RawData import RawData
 from preprocessing.MicrotripData import MicrotripData
 import pandas as pd
 
 from os import listdir
 from os.path import isfile, join
+
 """Control the preprosessing step. """
 
 
 class RawDataController:
-    def __init__(self, raw_data_file,):
+    def __init__(self, raw_data_file, ):
         """ Control the preprocessing of the data.
         Create a list of RawData object with the method cleanData().
         Initialize an empty list microtrip_data that will contain the MicrotripData object."""
@@ -21,7 +21,7 @@ class RawDataController:
     def preprocess(self, microtrips_len):
         self.build_microtrips(microtrips_len)
         self.save_combine_microtrips()
-        #self.save_clean_data()
+        # self.save_clean_data()
 
     def cleanData(self):
         """ For every raw data file in self.raw_data_file, initialize a RawData() object, clean it, prepare it
@@ -49,18 +49,13 @@ class RawDataController:
             file_name = "../data/clean_data/" + data.file.name + data.file.extension
             data.save_csv(file_name)
 
-    def save_combined_clean_data(self):
-        """Combine the clean data of the clean_data list into one big dataframe and save it in csv format in the
-        clean_data directory."""
+    def get_combined_clean_data(self):
+        """Combine the clean data of the clean_data list into one big dataframe """
         df = []
         for data in self.clean_data:
             df.append(data.df)
-        df = pd.concat(df, axis=0, join='outer', ignore_index=False, keys=None,
-                       levels=None, names=None, verify_integrity=False, copy=True)
-        file_name = "../data/clean_data/" + "combined_clean_data + " + '.csv'
-        df.to_csv(file_name, sep=";", index=False)
-
-        return(df)
+        return pd.concat(df, axis=0, join='outer', ignore_index=False, keys=None,
+                         levels=None, names=None, verify_integrity=False, copy=True)
 
     def save_microtrips(self):
         """Save every MicrotripData object contained in the self.microtrip_data list in .csv format in the
@@ -81,7 +76,6 @@ class RawDataController:
         self.microtrip_df = df
         return self.microtrip_df
 
-
     def save_combine_microtrips(self, file_name="combined_microtrips", path="../data/microtrips/"):
         """Combine the microtrip data of the microtrip_data list into one big dataframe and save it in csv format in the
         microtrips directory."""
@@ -98,7 +92,7 @@ class RawDataController:
         return df
 
 
-def find_files(main_path, column_names = []):
+def find_files(main_path, column_names=[]):
     """Look into a directory and return a list of files objects"""
     main_path = main_path
     files = []
@@ -117,10 +111,3 @@ class File:
 
     def get_full_path(self):
         return self.path + self.name + self.extension
-
-
-
-
-
-
-

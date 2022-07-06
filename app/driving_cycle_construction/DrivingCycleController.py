@@ -13,8 +13,9 @@ def import_csv2pd(file):
 
 
 class DrivingCyclesController:
-    def __init__(self, clustered_microtrip_df, cycle_len, delta_speed, comparisonParameters=[]):
+    def __init__(self, clustered_microtrip_df, clean_data_df, cycle_len, delta_speed, comparisonParameters=[]):
         self.segment_df = clustered_microtrip_df
+        self.clean_data_df = clean_data_df
         self.cycle_len = cycle_len
         self.delta_speed = delta_speed
         # generate the transition matrix
@@ -24,11 +25,10 @@ class DrivingCyclesController:
         dc_parameter_controller = DCParametersCalculator(self.segment_df, id=-1)
         self.assessment_criteria = dc_parameter_controller.summarize()
         self.comparisonParameters = comparisonParameters
+        self.cycles =[]
 
-    def generate_cycle(self):
-        dc = DrivingCycle(self.segment_df, self.transition_matrix, self.cycle_len, self.delta_speed, cycle_id=0)
-        print(dc.parameters)
-        dc.visualize_dc('Speed')
+    def get_full_cycles(self):
+        return [dc.get_full_driving_cycle(self.clean_data_df) for dc in self.cycles]
 
     def generate_cycle(self, iteration, number_of_cycle):
         """Generate cycles and select the best one. 
@@ -52,7 +52,8 @@ class DrivingCyclesController:
             nb = comparison_df['rank'].sort_values(ascending=True).index.values[c]
             cycles[nb].set_rank((comparison_df.iloc[int(nb)]['rank']))
             selected_cycles.append(nb)
-        return [cycles[nb] for nb in selected_cycles]
+        self.cycles = [cycles[nb] for nb in selected_cycles]
+        self.get_full_cycles()
 
     def compare_cycle(self, parameters):
         """Compare the cycles contained in parameters. 

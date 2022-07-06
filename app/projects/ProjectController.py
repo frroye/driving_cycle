@@ -25,6 +25,7 @@ class ProjectController:
         self.project_name = project_name + "/"
         create_directory(self.project_name, path)
         self.path = path + self.project_name
+        self.clean_data_df = None
         self.microtrip_df = None
         self.clustered_microtrip_df = None
 
@@ -48,6 +49,7 @@ class ProjectController:
             data_controler = RawDataController(fc)
             data_controler.build_microtrips(microtrip_len)
             self.microtrip_df = data_controler.combine_microtrips()
+            self.clean_data_df = data_controler.get_combined_clean_data()
         else:
             print("data/raw_data is empty.")
 
@@ -56,9 +58,9 @@ class ProjectController:
         clustering_controller.select_clustering_columns(columns, PCA)
         clustering_controller.kmeans(number_of_cluster)
         self.clustered_microtrip_df = clustering_controller.df
-        # clustering_controller.visualize_cluster_2d(columns[0], columns[1])
+        clustering_controller.visualize_cluster_2d(columns[0], columns[1])
 
     def produce_driving_cycle(self, cycle_len, delta_speed, iteration, number_of_cycle=1):
-        dc_controller = DrivingCyclesController(self.clustered_microtrip_df, cycle_len, delta_speed)
-        driving_cycles = dc_controller.generate_cycle(iteration, number_of_cycle)
-        return driving_cycles
+        dc_controller = DrivingCyclesController(self.clustered_microtrip_df, self.clean_data_df, cycle_len, delta_speed)
+        dc_controller.generate_cycle(iteration, number_of_cycle)
+        return dc_controller.cycles

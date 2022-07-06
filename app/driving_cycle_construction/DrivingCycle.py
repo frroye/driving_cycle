@@ -6,6 +6,7 @@ from driving_cycle_construction.TransitionMatrixController import TransitionMatr
 import os
 from driving_cycle_construction.AssessmentCriteriaCalculator import AssessmentCriteriaCalculator
 
+
 class DrivingCycle:
 
     def __init__(self, df, transition_matrix, dc_len, delta_speed, cycle_id=0):
@@ -19,6 +20,7 @@ class DrivingCycle:
         self.parameters = self.compute_dc_parameters()
         self.difference = None
         self.rank = None
+        self.full_cycle = None
 
     def import_csv2pd(self, file):
         """Import csv to pandas dataframe.
@@ -115,20 +117,21 @@ class DrivingCycle:
     def get_rank(self):
         return self.rank
 
-    def get_full_driving_cycle(self):
-        """Return the full profil of the driving cycle, using the clean data."""
-        files_name = self.df_dc_segment.File.unique()
+    def get_full_driving_cycle(self, clean_data_df):
+        """Return the full profile of the driving cycle, using the microtrips full data."""
+        #TODO a revoir ici cause surement un pb :/
         df = [None] * len(self.segment_list)
-        for file in files_name:
-            clean_data_df = pd.read_csv('../data/clean_data/' + file + ".csv",
-                             sep=';', encoding='latin-1')
-            seg_ = list(self.df_dc_segment[self.df_dc_segment['File'] == file].index)
-            for seg in seg_:
-                position = self.segment_list.index(seg)
-                df[position] = (clean_data_df[clean_data_df['Seg'] == seg])
+        print(self.segment_list)
+        full_segment_data = []
+        for seg in self.segment_list:
+            position = self.segment_list.index(seg)
+            df[position] = (clean_data_df[clean_data_df['Seg'] == seg])
+            full_segment_data.append(clean_data_df[clean_data_df['Seg'] == seg])
 
-        df = pd.concat(df, axis=0, join='outer', ignore_index=False, keys=None,
-                               levels=None, names=None, verify_integrity=False, copy=True)
+        df = pd.concat(full_segment_data, axis=0, join='outer', ignore_index=False, keys=None,
+                       levels=None, names=None, verify_integrity=False, copy=True)
+        df["cumulative_time"] = df["Duration"].cumsum()
+        self.full_cycle = df
         return df
 
     def compute_difference(self, assessment_criteria):
@@ -155,17 +158,15 @@ class DrivingCycle:
 
     def save_cycle_data(self, directory_name, file_name):
         file_name = directory_name + str(file_name) + ".csv"
-        df = self.get_full_driving_cycle()
-        df.to_csv(file_name, sep=";")
+        self.full_cycle.to_csv(file_name, sep=";")
 
     def visualize_dc(self, parameter, title="driving cycle", show=False, path=None):
         """Visualize the driving cycle parameter over time. Each microtip has a different color.
         parameter: 'Speed', 'FuelRate', 'Acc'
 
-        """
-        df = self.get_full_driving_cycle()
-        print(df.columns)
-        df["cumulative_time"] = df["Duration"].cumsum()
+
+        df = self.full_cycle
+        #df["cumulative_time"] = df["Duration"].cumsum()
         i = 0
         color = ['0.75', 'b', 'g', 'r', 'c', 'm', '0.75', 'y', 'k', '0.45', 'b', 'g', 'r', 'c', 'm', '0.75', 'y',
                  'k']
@@ -177,10 +178,14 @@ class DrivingCycle:
         pyplot.xlabel("Time (s)")
         pyplot.ylabel(parameter)
         pyplot.title(title)
+        """
+        df = self.full_cycle
+
+        fig = df.plot.scatter(x="cumulative_time", y=parameter, c="Seg", colormap='viridis', legend=False).get_figure()
         if path:
-            pyplot.savefig(path)
+            fig.savefig(path + '.png')
         if show:
-            pyplot.show()
+            fig.show()
 
 
 def create_results_directory(name):
@@ -192,5 +197,3 @@ def create_results_directory(name):
         print("Creation of the directory %s failed" % path)
     else:
         print("Successfully created the directory %s " % path)
-
-

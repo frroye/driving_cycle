@@ -37,7 +37,6 @@ class ClusteringController:
             # df_['File'] = file.name
             # df_.set_index(['File', 'Seg'])
             df.append(df_)
-            print(file.name)
         df = pd.concat(df, axis=0, join='outer', ignore_index=False, keys=None,
                        levels=None, names=None, verify_integrity=False, copy=True)
 
