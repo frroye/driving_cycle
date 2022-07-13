@@ -64,7 +64,10 @@ class DrivingCycle:
             while not i:
                 next_seg = self.select_seg(next_cluster)
                 i_speed = float(self.df_segment.iloc[next_seg, :]['V_i'])
-                if next_seg not in dc_ and abs(i_speed - f_speed) < self.delta_speed:
+                # The following condition can be add with bigger dataset.
+                # For smaller dataset, there might not be enough microtrips to use a microtrip only one time per driving cycle
+                #if next_seg not in dc_ and abs(i_speed - f_speed) < self.delta_speed:
+                if abs(i_speed - f_speed) < self.delta_speed:
                     i = True
                     f_speed = float(self.df_segment.iloc[next_seg, :]['V_f'])
                     dc_.append(int(next_seg[0]))
@@ -124,8 +127,9 @@ class DrivingCycle:
         """Compute the difference between the driving cycle parameters and the assessment criteria."""
         diff_ = {}
         for criteria in assessment_criteria:
+
             diff = abs((assessment_criteria[criteria] - self.parameters.get_parameters()[criteria])
-                       / (assessment_criteria[criteria]))
+                       / (assessment_criteria[criteria])) if assessment_criteria[criteria] != 0 else float('inf')
             diff_ = {**diff_, **{criteria: diff}}
             self.difference = diff_
         return diff_
@@ -151,7 +155,8 @@ class DrivingCycle:
         parameter: 'Speed', 'FuelRate', 'Acc'
         """
         df = self.full_cycle
-        fig = df.plot.scatter(x="cumulative_time", y=parameter, c="Seg", title=title, colormap='viridis', legend=False).get_figure()
+        fig = df.plot.scatter(x="cumulative_time", y=parameter, c="Seg", title=title, colormap='viridis',
+                              legend=False).get_figure()
         if path:
             fig.savefig(path + '.png')
         if show:

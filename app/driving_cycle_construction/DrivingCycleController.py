@@ -36,7 +36,9 @@ class DrivingCyclesController:
 
         parameters = []
         cycles = []
+        print(self.transition_matrix)
         for i in range(0, iteration):
+            print(i)
             cycle = DrivingCycle(self.segment_df, self.transition_matrix, self.cycle_len, self.delta_speed, i)
             cycles.append(cycle)
             parameters.append(cycle.compute_difference(self.assessment_criteria))
