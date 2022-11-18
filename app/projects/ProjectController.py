@@ -27,6 +27,7 @@ class ProjectController:
         self.clustered_microtrip_df = None
         self.raw_data_controler = None
         self.clustering_controller = None
+        self.assessment_criteria = None
 
     def preprocess(self, raw_data_directory, column_names, microtrip_len):
         """Preprocess the content of data/raw_data.
@@ -72,4 +73,8 @@ class ProjectController:
     def produce_driving_cycle(self, cycle_len, delta_speed, iteration, number_of_cycle=1):
         dc_controller = DrivingCyclesController(self.clustered_microtrip_df, self.clean_data_df, cycle_len, delta_speed)
         dc_controller.generate_cycle(iteration, number_of_cycle)
+        self.assessment_criteria = dc_controller.get_assessment_criteria()
         return dc_controller.cycles
+
+    def get_assessment_criteria(self):
+        return self.assessment_criteria

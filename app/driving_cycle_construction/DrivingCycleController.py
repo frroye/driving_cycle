@@ -21,6 +21,9 @@ class DrivingCyclesController:
         dc_parameter_controller = DCParametersCalculator(self.segment_df, id=-1)
         self.assessment_criteria = dc_parameter_controller.summarize()
 
+    def get_assessment_criteria(self):
+        return self.assessment_criteria
+
     def get_full_cycles(self):
         return [dc.get_full_driving_cycle(self.clean_data_df) for dc in self.cycles]
 
@@ -36,9 +39,7 @@ class DrivingCyclesController:
 
         parameters = []
         cycles = []
-        print(self.transition_matrix)
         for i in range(0, iteration):
-            print(i)
             cycle = DrivingCycle(self.segment_df, self.transition_matrix, self.cycle_len, self.delta_speed, i)
             cycles.append(cycle)
             parameters.append(cycle.compute_difference(self.assessment_criteria))

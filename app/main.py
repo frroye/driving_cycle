@@ -29,7 +29,7 @@ delta_speed = 20
 iteration = 50
 
 # Number of selected cycles
-nb_of_cycle = 2
+nb_of_cycle = 1
 
 """Initialization of the project controller"""
 pc = ProjectController()
@@ -63,7 +63,11 @@ pc.vizualize_cluster_2d(None, None, path=os.path.join(absolute_path, "results\\c
 """Driving cycle construction """
 
 driving_cycles = pc.produce_driving_cycle(cycle_len, delta_speed, iteration, nb_of_cycle)
+print('Assessment criteria: ', pc.get_assessment_criteria())
 for dc in driving_cycles:
     dc.visualize_dc("Speed", path=os.path.join(absolute_path, "results\\dc"+str(dc.id)))
     dc.save_cycle_data(os.path.join(absolute_path, "results\\dc"), dc.id)
+    y = pd.DataFrame(dc.get_parameters(), index=[0])
+    y.to_csv(os.path.join(absolute_path,'results\\DC.csv'), mode='a', index=False, header=False, sep=';')
+
 

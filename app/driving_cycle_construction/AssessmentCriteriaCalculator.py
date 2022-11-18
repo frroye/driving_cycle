@@ -1,4 +1,21 @@
-""" Description: """
+""" Calculate the assessment criteria for a dataset:
+1	SAFD    Matrix of speed and acceleration	%
+2	V_	Average speed of the entire dataset	Km/h
+3	Vr	Average running speed	Km/h
+4	Vm	Maximum speed	Km/h
+5	Acc	Average acceleration of all acceleration phases	m/s2
+6	Dcc	Average deceleration of all deceleration phases	m/s2
+7	C	Average number of acceleration-deceleration changes (and vice versa) within one driving period	NA
+8	A^2	Root mean square acceleration	m/s2
+9	RP	Road power	kW
+Time proportions of driving modes:
+10	Idle_p	Idle (speed = 0)	%
+11	Acc_p	Acceleration (acceleration ≥ 0.1 m/s2)	%
+12	Cru_p	Cruising (- 0.1 m/s2 < acceleration < 0.1 m/s2, average speed > 20 km/h)	%
+13	Dcc_p	Deceleration (acceleration ≤ -0.1 m/s2)	%
+14	Cre_p	Creeping (- 0.1 m/s2 < acceleration < 0.1 m/s2, average speed < 20 km/h)	%
+
+"""
 
 
 from os import listdir
