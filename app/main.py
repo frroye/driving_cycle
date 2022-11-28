@@ -66,6 +66,10 @@ driving_cycles = pc.produce_driving_cycle(cycle_len, delta_speed, iteration, nb_
 print('Assessment criteria: ', pc.get_assessment_criteria())
 for dc in driving_cycles:
     dc.visualize_dc("Speed", path=os.path.join(absolute_path, "results\\dc"+str(dc.id)))
+    dc.visualize_dc_line(parameter="Speed",
+                         path=os.path.join(absolute_path, "results\\dc_line_"+str(dc.id)),
+                         title="Title",
+                         xLabel="Cumulative time")
     dc.save_cycle_data(os.path.join(absolute_path, "results\\dc"), dc.id)
     y = pd.DataFrame(dc.get_parameters(), index=[0])
     y.to_csv(os.path.join(absolute_path,'results\\DC.csv'), mode='a', index=False, header=False, sep=';')

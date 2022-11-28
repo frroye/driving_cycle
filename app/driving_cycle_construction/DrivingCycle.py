@@ -161,3 +161,17 @@ class DrivingCycle:
             fig.savefig(path + '.png')
         if show:
             fig.show()
+
+    def visualize_dc_line(self, parameter, title="driving cycle", xLabel="Cumulative time", show=False, path=None):
+        """Visualize the driving cycle parameter over time. Each microtip has a different color.
+        parameter: 'Speed', 'FuelRate', 'Acc'
+        """
+        df = self.full_cycle
+        ax = df.plot.line(x="cumulative_time", y=parameter, title=title, legend=False)
+        ax.set_ylabel(parameter)
+        ax.set_xlabel(xLabel)
+        fig = ax.get_figure()
+        if path:
+            fig.savefig(path + '.png')
+        if show:
+            fig.show()
